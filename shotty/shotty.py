@@ -4,6 +4,18 @@ import click
 session = boto3.Session(profile_name='shotty')
 ec2 = session.resource('ec2')
 
+# Filter our instances 
+def filter_instances(project):
+    instances = []
+    
+    if project:
+        filters = [{'Name':'tag:Project', 'Values':[project]}]
+        instances = ec2.instances.filter(Filters=filters)
+    else:
+        instances = ec2.instances.all()
+
+    return instances
+
 @click.group()
 def instances():
     """Commands for instances"""
@@ -13,13 +25,7 @@ def instances():
 
 def list_instances(project):
     "List EC2 Instances"
-    instances = []
-    
-    if project:
-        filters = [{'Name':'tag:Project', 'Values':[project]}]
-        instances = ec2.instances.filter(Filters=filters)
-    else:
-        instances = ec2.instances.all()
+    instances = filter_instances(project)
 
     print('--- EC2 Instances ---')
 
@@ -43,13 +49,7 @@ def list_instances(project):
 def stop_instances(project):
     "Stop EC2 instances"
 
-    instances = []
-    
-    if project:
-        filters = [{'Name':'tag:Project', 'Values':[project]}]
-        instances = ec2.instances.filter(Filters=filters)
-    else:
-        instances = ec2.instances.all()
+    instances = filter_instances(project)
 
     for i in instances:
         print("Stopping {0}...".format(i.id))
@@ -62,13 +62,7 @@ def stop_instances(project):
 def start_instances(project):
     "Stop EC2 instances"
 
-    instances = []
-    
-    if project:
-        filters = [{'Name':'tag:Project', 'Values':[project]}]
-        instances = ec2.instances.filter(Filters=filters)
-    else:
-        instances = ec2.instances.all()
+    instances = filter_instances(project)
 
     for i in instances:
         print("Starting {0}...".format(i.id))
